@@ -6,9 +6,16 @@ content = product_page_url.text
 soup  = BeautifulSoup(content, 'html.parser')
 
 table = soup.select('.product_page .table.table-striped')[0]
+title = soup.select('.col-sm-6.product_main')[0]
 upc_code = ''
-price_excl_tax = ''
-price_incl_tax = ''
+price_excluding_tax = ''
+price_including_tax = ''
+number_available_element = soup.select('.instock.availability')[0]
+number_available = ''.join(filter(str.isdigit, str(number_available_element)))
+product_description = soup.select('#product_description + p')[0]
+category = soup.select('.breadcrumb')[0].text.split()
+review_rating = ''
+image_url = soup.select('.product_page .item.active')[0].find('img').attrs['src']
 
 for row in table.find_all('tr'):
     if row.find('th').text.upper() == 'UPC':
@@ -18,9 +25,15 @@ for row in table.find_all('tr'):
     elif row.find('th').text.upper() == 'PRICE (INCL. TAX)':
         price_incl_tax = row.find('td').text.replace('Â','').replace('£', '')
 
+
+print(title.find('h1').text)
+print(number_available)
 print(upc_code)
 print(price_excl_tax)
 print(price_incl_tax)
+print(product_description.text)
+print(category[2])
+print(image_url)
 
 # url = 'https://books.toscrape.com/'
 # pages = [url]
