@@ -2,19 +2,16 @@ from bs4 import BeautifulSoup
 import requests
 from pprint import pprint
 
-current_link = 'https://books.toscrape.com/index.html'
-product_page_url = requests.get(current_link).text
-soup  = BeautifulSoup(product_page_url, 'html.parser')
-links = soup.find_all('div',class_='image_container')
+home_link = 'https://books.toscrape.com/index.html'
 url = 'https://books.toscrape.com/'
 categories = set()
-pages = [url]
+page_links = []
 
-for i in range(2,51):
-    path = 'catalougue/page-' + str(i) + '.html'
-    pages.append(url + path)
+for i in range(1,51):
+    path = 'catalogue/page-' + str(i) + '.html'
+    page_links.append(url + path)
 # functions to get information
-books = []
+books = {}
 
 def get_info(soup):
 
@@ -50,23 +47,40 @@ def get_info(soup):
                   'Review Rating' : review_rating,
                   'Image URL' : image_url,
                  'Product Page URL' : current_link}
-    categories.add(book['Category'])
 
     return book
 
-
-for i in pages:
-    # product_page_url = requests.get(i).text;
-    current_link = i
-    for book in links:
-        current_link = 'https://books.toscrape.com/' + book.find('a').attrs['href']
-
+# print(links)
+# print(pages)
+# exit()
+c = 3
+for page_link in page_links:
+    # print(page_link)
+    page_response = requests.get(page_link)
+    # print(page_response.text)
+    soup  = BeautifulSoup(page_response.text, 'html.parser')
+    page_response.close()
+    book_links = soup.find_all('div',class_='image_container')
+    if c  == 0:
+        break
+    c -=1
+    for book_link in book_links:
+        current_link = 'https://books.toscrape.com/catalogue/' + book_link.find('a').attrs['href']
+        # print(current_link)
         response = requests.get(current_link)
         book_info = get_info(BeautifulSoup(response.content.decode('utf-8','ignore'), 'html.parser'))
         response.close()
-        books.append(book_info)
-
+        book_category = book_info['Category']
+        books_in_category = books.get(book_category, [])
+        books_in_category.append(book_info)
+        books[book_category] = books_in_category
+        # books.append(book_info)
+        # print(book_info['title'])
+    # break
 pprint(books)
 # titles = [book['title'] for book in books]
 # pprint(list(categories))
 # pprint(titles)
+
+# for i in books:
+#     print(i['Category'])
