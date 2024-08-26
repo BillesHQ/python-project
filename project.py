@@ -23,7 +23,11 @@ def get_info(soup):
     price_including_tax = ''
     number_available_element = soup.select('.instock.availability')[0]
     number_available = ''.join(filter(str.isdigit, str(number_available_element)))
-    product_description = soup.select('#product_description + p')[0].text
+
+    product_description_results = soup.select('#product_description + p')
+    product_description = ''
+    if len(product_description_results) > 0:
+        product_description = product_description_results[0].text
     category = soup.select('.breadcrumb')[0].find_all('a')[2].text
     review_rating = soup.find('p', class_='star-rating')['class'][1]
     image_url = soup.select('.product_page .item.active')[0].find('img').attrs['src']
@@ -53,7 +57,7 @@ def get_info(soup):
 # print(links)
 # print(pages)
 # exit()
-c = 3
+c = 20
 for page_link in page_links:
     # print(page_link)
     page_response = requests.get(page_link)
@@ -61,12 +65,12 @@ for page_link in page_links:
     soup  = BeautifulSoup(page_response.text, 'html.parser')
     page_response.close()
     book_links = soup.find_all('div',class_='image_container')
-    if c  == 0:
-        break
-    c -=1
+    # if c  == 0:
+    #     break
+    # c -=1
     for book_link in book_links:
         current_link = 'https://books.toscrape.com/catalogue/' + book_link.find('a').attrs['href']
-        # print(current_link)
+        print(current_link)
         response = requests.get(current_link)
         book_info = get_info(BeautifulSoup(response.content.decode('utf-8','ignore'), 'html.parser'))
         response.close()
@@ -77,6 +81,9 @@ for page_link in page_links:
         # books.append(book_info)
         # print(book_info['title'])
     # break
+
+for category,list in books.items():
+    pprint(books.items())
 pprint(books)
 # titles = [book['title'] for book in books]
 # pprint(list(categories))
