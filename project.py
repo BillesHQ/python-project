@@ -87,10 +87,19 @@ def csv_name_gen(category_name):
     csv_name = category_name.lower().replace(' ', '_')
     return 'categories/' + csv_name
 
-for category,list in books.items():
+columns = ['title','Available Books','UPC Code','Price Excluding Tax','Price Including Tax','Product Description','Category','Review Rating','Image URL','Product Page URL']
+for category,booklist in books.items():
     file_name = csv_name_gen(category)
-    with open(file_name + '.csv', 'w') as f:
+    with open(file_name + '.csv', 'w', encoding="utf-8") as f:
         f.write('Title, Available Books, UPC, Price Excl Tax, Price Incl Tax, Product Description, Category, Review Rating, Image URL, Product Page URL \n')
+        for book in booklist:
+            for column in columns:
+                f.write('"')
+                f.write(book[column])
+                f.write('", ')
+            f.write('\n')
+
+
 
 
 # titles = [book['title'] for book in books]
