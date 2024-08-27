@@ -99,7 +99,8 @@ for category,booklist in books.items():
                 f.write('", ')
             f.write('\n')
 
-
+for image_url in books.items():
+    print(image_url)
 
 
 # titles = [book['title'] for book in books]
