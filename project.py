@@ -57,7 +57,7 @@ def get_info(soup):
 # print(links)
 # print(pages)
 # exit()
-c = 20
+c = 3
 for page_link in page_links:
     # print(page_link)
     page_response = requests.get(page_link)
@@ -65,12 +65,12 @@ for page_link in page_links:
     soup  = BeautifulSoup(page_response.text, 'html.parser')
     page_response.close()
     book_links = soup.find_all('div',class_='image_container')
-    # if c  == 0:
-    #     break
-    # c -=1
+    if c  == 0:
+        break
+    c -=1
     for book_link in book_links:
         current_link = 'https://books.toscrape.com/catalogue/' + book_link.find('a').attrs['href']
-        print(current_link)
+        # print(current_link)
         response = requests.get(current_link)
         book_info = get_info(BeautifulSoup(response.content.decode('utf-8','ignore'), 'html.parser'))
         response.close()
@@ -78,16 +78,24 @@ for page_link in page_links:
         books_in_category = books.get(book_category, [])
         books_in_category.append(book_info)
         books[book_category] = books_in_category
+        print(book_info.keys())
         # books.append(book_info)
         # print(book_info['title'])
     # break
+def csv_name_gen(category_name):
+    csv_name = ''
+    csv_name = category_name.lower().replace(' ', '_')
+    return 'categories/' + csv_name
 
 for category,list in books.items():
-    pprint(books.items())
-pprint(books)
+    file_name = csv_name_gen(category)
+    with open(file_name + '.csv', 'w') as f:
+        f.write('Title, Available Books, UPC, Price Excl Tax, Price Incl Tax, Product Description, Category, Review Rating, Image URL, Product Page URL \n')
+
+
 # titles = [book['title'] for book in books]
 # pprint(list(categories))
 # pprint(titles)
-
+# pprint(books.keys())
 # for i in books:
 #     print(i['Category'])
