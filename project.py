@@ -10,7 +10,7 @@ home_link = 'https://books.toscrape.com/index.html'
 url = 'https://books.toscrape.com/'
 page_links = []
 
-# getting all 50 url links from home Page
+# developing all 50 url links from home Page
 for i in range(1,51):
     path = 'catalogue/page-' + str(i) + '.html'
     page_links.append(url + path)
@@ -65,7 +65,7 @@ for page_link in page_links:
     soup  = BeautifulSoup(page_response.text, 'html.parser')
     page_response.close()
     book_links = soup.find_all('div',class_='image_container')
-    
+
 # loop through each product page and getting info
     for book_link in book_links:
         current_link = 'https://books.toscrape.com/catalogue/' + book_link.find('a').attrs['href']
