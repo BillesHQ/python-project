@@ -58,16 +58,14 @@ def get_info(soup):
 
     return book
 
-# c = 3
+
 # loop through all 50 page links
 for page_link in page_links:
     page_response = requests.get(page_link)
     soup  = BeautifulSoup(page_response.text, 'html.parser')
     page_response.close()
     book_links = soup.find_all('div',class_='image_container')
-    # if c == 0:
-    #     break
-    # c -=1
+    
 # loop through each product page and getting info
     for book_link in book_links:
         current_link = 'https://books.toscrape.com/catalogue/' + book_link.find('a').attrs['href']
@@ -116,9 +114,6 @@ for category,booklist in books.items():
             f.write('\n')
             img_page_response = requests.get(book['Image URL'])
             img_page = img_page_response.content
-            # print(book['Image URL'])
-            # print(book['Category'])
-            # print(book['title'])
             img_page_response.close()
             img_book_name = image_gen(book['title'])
 
