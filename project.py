@@ -2,25 +2,27 @@ from bs4 import BeautifulSoup
 import requests
 from pprint import pprint
 
+word = '20394i23904rwskfnsklefnse#@$^$%&%(&^*())'
+
+
+# grabbing base URLS
 home_link = 'https://books.toscrape.com/index.html'
 url = 'https://books.toscrape.com/'
-categories = set()
 page_links = []
 
+# getting all 50 url links from home Page
 for i in range(1,51):
     path = 'catalogue/page-' + str(i) + '.html'
     page_links.append(url + path)
-# functions to get information
+
+# initiating dictionary to store all books
 books = {}
 
+# function to get all information from books
 def get_info(soup):
 
     table = soup.select('.product_page .table.table-striped')[0]
-    table_body = table.find('tbody')
     title = soup.select('.col-sm-6.product_main')[0].find('h1').text
-    upc_code = ''
-    price_excluding_tax = ''
-    price_including_tax = ''
     number_available_element = soup.select('.instock.availability')[0]
     number_available = ''.join(filter(str.isdigit, str(number_available_element)))
 
@@ -31,7 +33,7 @@ def get_info(soup):
     category = soup.select('.breadcrumb')[0].find_all('a')[2].text
     review_rating = soup.find('p', class_='star-rating')['class'][1]
     image_url = soup.select('.product_page .item.active')[0].find('img').attrs['src']
-
+    image_url = current_link[0:27]+ image_url.replace('../../', '')
     for row in table.find_all('tr'):
       if row.find('th').text.upper() == 'UPC':
           upc_code = row.find('td').text
@@ -40,37 +42,35 @@ def get_info(soup):
       elif row.find('th').text.upper() == 'PRICE (INCL. TAX)':
           price_incl_tax = row.find('td').text.replace('Â','').replace('£', '')
 
-
-    book = {'title' : title,
-                  'Available Books' : number_available,
-                  'UPC Code' : upc_code,
-                  'Price Excluding Tax' : price_excl_tax,
-                  'Price Including Tax' : price_incl_tax,
-                  'Product Description' : product_description,
-                  'Category' : category,
-                  'Review Rating' : review_rating,
-                  'Image URL' : image_url,
-                 'Product Page URL' : current_link}
+# storing info in a dictionary
+    book = {
+        'title' : title,
+        'Available Books' : number_available,
+        'UPC Code' : upc_code,
+        'Price Excluding Tax' : price_excl_tax,
+        'Price Including Tax' : price_incl_tax,
+        'Product Description' : product_description,
+        'Category' : category,
+        'Review Rating' : review_rating,
+        'Image URL' : image_url,
+        'Product Page URL' : current_link
+    }
 
     return book
 
-# print(links)
-# print(pages)
-# exit()
-c = 3
+# c = 3
+# loop through all 50 page links
 for page_link in page_links:
-    # print(page_link)
     page_response = requests.get(page_link)
-    # print(page_response.text)
     soup  = BeautifulSoup(page_response.text, 'html.parser')
     page_response.close()
     book_links = soup.find_all('div',class_='image_container')
-    if c  == 0:
-        break
-    c -=1
+    # if c == 0:
+    #     break
+    # c -=1
+# loop through each product page and getting info
     for book_link in book_links:
         current_link = 'https://books.toscrape.com/catalogue/' + book_link.find('a').attrs['href']
-        # print(current_link)
         response = requests.get(current_link)
         book_info = get_info(BeautifulSoup(response.content.decode('utf-8','ignore'), 'html.parser'))
         response.close()
@@ -78,34 +78,53 @@ for page_link in page_links:
         books_in_category = books.get(book_category, [])
         books_in_category.append(book_info)
         books[book_category] = books_in_category
-        print(book_info.keys())
-        # books.append(book_info)
-        # print(book_info['title'])
-    # break
+
+# function to create csv title corresponding to category
 def csv_name_gen(category_name):
     csv_name = ''
     csv_name = category_name.lower().replace(' ', '_')
     return 'categories/' + csv_name
 
+# function to create jpg title corresponding to book title
+def image_gen(title):
+    img_name = ''
+    for char in title:
+        if char.isalnum():
+            img_name += char
+
+    return 'images/' + img_name
+
+# column titles for csv files
 columns = ['title','Available Books','UPC Code','Price Excluding Tax','Price Including Tax','Product Description','Category','Review Rating','Image URL','Product Page URL']
+
+# loop through categories and book-lists
 for category,booklist in books.items():
     file_name = csv_name_gen(category)
+
+# intiating csv file and saved to categories files
     with open(file_name + '.csv', 'w', encoding="utf-8") as f:
         f.write('Title, Available Books, UPC, Price Excl Tax, Price Incl Tax, Product Description, Category, Review Rating, Image URL, Product Page URL \n')
+
+# looping through books within book-list
         for book in booklist:
+
+# adding column titles to csv files
             for column in columns:
                 f.write('"')
                 f.write(book[column])
                 f.write('", ')
             f.write('\n')
+            img_page_response = requests.get(book['Image URL'])
+            img_page = img_page_response.content
+            # print(book['Image URL'])
+            # print(book['Category'])
+            # print(book['title'])
+            img_page_response.close()
+            img_book_name = image_gen(book['title'])
 
-for image_url in books.items():
-    print(image_url)
+# intiating jpg files and saved to images files
+            with open(img_book_name + '.jpg', 'wb') as img:
+                img.write(img_page)
 
 
-# titles = [book['title'] for book in books]
-# pprint(list(categories))
-# pprint(titles)
-# pprint(books.keys())
-# for i in books:
-#     print(i['Category'])
+
