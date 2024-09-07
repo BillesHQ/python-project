@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 import requests
-from pprint import pprint
 
 word = '20394i23904rwskfnsklefnse#@$^$%&%(&^*())'
 
